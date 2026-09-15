@@ -146,9 +146,9 @@ public class Main {
         ispisPrograma();
         System.out.println("Odaberite ID programa obrazovanja u koji ga zelite prebaciti:");
         int poID = Integer.parseInt(input.nextLine());
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction transaction = session.beginTransaction();
-
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction transaction = session.beginTransaction();
+        try {
             Polaznik polaznik = session.find(Polaznik.class, pID);
             ProgramObrazovanja program = session.find(ProgramObrazovanja.class, poID);
             String hql = "UPDATE Upis u SET u.programObrazovanja = :poID WHERE u.polaznik.polaznikID = :pID";
@@ -158,6 +158,15 @@ public class Main {
                     .executeUpdate();
             transaction.commit();
             System.out.println("Polaznik " + polaznik + " prebacen je na program " + program);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            if(transaction.isActive()) {
+                transaction.rollback();
+            }
+        }
+        finally{
+            session.close();
         }
     }
 }
